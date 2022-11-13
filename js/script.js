@@ -1,9 +1,4 @@
-
-/*
-Consegna:
-Riprendiamo l'esercizio carosello e modifichiamone il codice per renderlo funzionante con un array di oggetti al posto dell'array semplice.
-Ecco l'array con i dati:
-const images = [
+const arrImages = [
 	{
 		image: '01.webp',
 		title: "Marvel's Spiderman Miles Morale",
@@ -30,4 +25,107 @@ const images = [
 		text: "Marvel's Avengers is an epic, third-person, action-adventure game that combines an original, cinematic story with single-player and co-operative gameplay.",
 	},
 ];
-*/
+
+const timeSlider = 1.5 * 1000;
+let direction = 1;
+let activeIndex = 0;
+let idInterval;
+let isAutoplayActive = true;
+
+renderSlider(arrImages);
+startAutoplay();
+
+document.querySelector('.slider').addEventListener('mouseenter', () => stopAutoplay());
+document.querySelector('.slider').addEventListener('mouseleave', () => {
+	if (isAutoplayActive) {
+		startAutoplay();
+	}
+});
+
+document.querySelector('.btn-invert').addEventListener('click', () => invertDirection());
+
+document.querySelector('.btn-start-stop').addEventListener('click', function() {
+	if (isAutoplayActive) {
+		stopAutoplay();
+		isAutoplayActive = false;
+		this.innerHTML = 'Start';
+	} else {
+		startAutoplay();
+		isAutoplayActive = true;
+		this.innerHTML = 'Stop';
+	}
+});
+
+const listSlides = document.querySelectorAll('.slide');
+
+const listThumbs = document.querySelectorAll('.thumb-img');
+listThumbs.forEach((eleThumb, index) => {
+	eleThumb.addEventListener('click', () => {
+		listSlides[activeIndex].classList.remove('active');
+		listThumbs[activeIndex].classList.remove('active');
+		activeIndex = index;
+		listSlides[activeIndex].classList.add('active');
+		listThumbs[activeIndex].classList.add('active');
+		document.body.style.backgroundImage = `url('img/${arrImages[activeIndex].image}')`;
+	})
+});
+
+const eleBtnRight = document.querySelector('.btn-right');
+eleBtnRight.addEventListener('click', () => moveSlide(1));
+
+const eleBtnLeft = document.querySelector('.btn-left');
+eleBtnLeft.addEventListener('click', () => moveSlide(-1));
+
+
+function renderSlider(arrImages) {
+	const eleSliderViewer = document.querySelector('.slider-viewer');
+	const eleSliderThumbs = document.querySelector('.thumbs');
+
+	document.body.style.backgroundImage = `url('img/${arrImages[activeIndex].image}')`;
+	for (let i = 0; i < arrImages.length; i++) {
+		const objSlide = arrImages[i];
+		eleSliderThumbs.innerHTML = eleSliderThumbs.innerHTML + `<img src="img/${objSlide.image}" class="thumb-img ${i === 0 ? 'active' : ''}">`;
+		eleSliderViewer.innerHTML += `
+			<div class="slide ${i === 0 ? 'active' : ''}">
+				<img src="img/${objSlide.image}" alt="${objSlide.title}">
+				<div class="text">
+					<h2>${objSlide.title}</h2>
+					<p>${objSlide.text}</p>
+				</div>
+			</div>
+		`
+	}
+}
+
+function startAutoplay() {
+	idInterval = setInterval(() => moveSlide(direction), timeSlider);
+}
+
+function stopAutoplay() {
+	clearInterval(idInterval);
+}
+
+function invertDirection() {
+	direction *= -1; 
+}
+
+function moveSlide(direction) {
+	listSlides[activeIndex].classList.remove('active');
+	listThumbs[activeIndex].classList.remove('active');
+
+	if (direction > 0) {
+		activeIndex++;
+		if (activeIndex === listSlides.length) {
+			activeIndex = 0;
+		}
+	} else {
+		if (activeIndex === 0) {
+			activeIndex = listSlides.length;
+		}
+		activeIndex--;
+	}
+
+	listSlides[activeIndex].classList.add('active');
+	listThumbs[activeIndex].classList.add('active');
+	document.body.style.backgroundImage = `url('img/${arrImages[activeIndex].image}')`;
+}
